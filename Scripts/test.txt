@@ -1,0 +1,269 @@
+Welcome to the MagicMirror wiki!
+
+# Table of Contents
+
+* [MagicMirror](#Magicmirror-sparkles)
+* [Google Home Doorbell](#google-home-doorbell-door-bell)
+* [Security Camera](#security-camera-video_camera)
+
+
+***
+
+## MagicMirror :sparkles:
+<img src="images/MagicMirror.png" width="480">
+
+### Hardware :hammer_and_wrench:
+* Raspberry Pi 4 Model B 2GB RAM
+* Monitor Display
+* [SD Card](https://www.amazon.co.uk/gp/product/B073JYC4XM/ref=ppx_yo_dt_b_asin_title_o03_s00?ie=UTF8&th=1)
+* [USB Type C](https://www.amazon.co.uk/gp/product/B07D7PM1VN/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1) cable for power
+* [Micro HMDI to HMDI](https://www.amazon.co.uk/gp/product/B014I8TZXW/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1)
+
+### Software :floppy_disk:
+* node
+* git
+
+#### crontab schedules:
+
+
+`crontab -e`
+:------------------------------------------------
+30 22 * * * /home/pi/[powerOffScreen.sh](https://github.com/micklay93/MagicMirror/blob/main/Scripts/powerOffScreen.sh)
+30 7 * * * /home/pi/[powerOnScreen.sh](https://github.com/micklay93/MagicMirror/blob/main/Scripts/powerOnScreen.sh)
+31 7 * * * /home/pi/[truncateLogFiles.sh](https://github.com/micklay93/MagicMirror/blob/main/Scripts/truncateLogFiles.sh)
+0 * * * * /home/pi/Camera/[downloadDailyFootage.sh](https://github.com/micklay93/MagicMirror/blob/main/Scripts/downloadDailyFootage.sh)
+0 23 * * 0 /home/pi/Camera/[deleteOldFootage.sh](https://github.com/micklay93/MagicMirror/blob/main/Scripts/deleteOldFootage.sh)
+
+***
+
+
+## Google Home Doorbell :door: :bell:
+
+### Hardware :hammer_and_wrench:
+* [RF Reciever Kit](https://www.amazon.co.uk/gp/product/B00UL3FRGS/ref=ppx_yo_dt_b_asin_title_o02_s00?ie=UTF8&psc=1) or standalone RXB6 433MHz wireless receiver WITH aerial
+* [Doorbell](https://www.amazon.co.uk/gp/product/B01LQBRJFA/ref=ppx_yo_dt_b_asin_title_o03_s00?ie=UTF8&psc=1) that transmits correct frequency
+* [Wiring](https://www.amazon.co.uk/gp/product/B01ERP6WL4/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1) if needed
+
+### Software :floppy_disk:
+* [Pushover](https://pushover.net/) used for device notifications
+* [Node-RED](https://nodered.org/docs/getting-started/raspberrypi#running-as-a-service) as a service for controlling Google Home devices
+
+<img src="images/nodeREDflow.png" width="680">
+
+To control text-to-speech from node-RED to your Google Home device, use the [Cast Module](https://github.com/Hypnos3/node-red-contrib-cast) module.
+
+Node-RED Flow:
+
+```yaml
+[{
+  "id": "e28d3a41.600118",
+  "type": "tab",
+  "label": "TriggerGoogleHome",
+  "disabled": false,
+  "info": ""
+}, {
+  "id": "f1e6c6f0.ee17e8",
+  "type": "rpi-gpio in",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "pin": "18",
+  "intype": "up",
+  "debounce": "25",
+  "read": false,
+  "x": 210,
+  "y": 420,
+  "wires": [
+    ["89e8e0a2.5d06d", "2829d9a.6081b26", "e3b55e44.ae488", "44a0f955.498728"]
+  ]
+}, {
+  "id": "89e8e0a2.5d06d",
+  "type": "debug",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "active": true,
+  "tosidebar": true,
+  "console": false,
+  "tostatus": false,
+  "complete": "payload",
+  "targetType": "msg",
+  "x": 530,
+  "y": 560,
+  "wires": []
+}, {
+  "id": "2829d9a.6081b26",
+  "type": "trigger",
+  "z": "e28d3a41.600118",
+  "op1": "Ding Dong! There is someone at your Front door.",
+  "op2": "0",
+  "op1type": "str",
+  "op2type": "str",
+  "duration": "0",
+  "extend": false,
+  "units": "ms",
+  "reset": "0",
+  "bytopic": "all",
+  "name": "",
+  "x": 540,
+  "y": 460,
+  "wires": [
+    ["89e8e0a2.5d06d"]
+  ]
+}, {
+  "id": "2196cf6c.1f616",
+  "type": "http request",
+  "z": "e28d3a41.600118",
+  "name": "PushOver API",
+  "method": "POST",
+  "ret": "txt",
+  "paytoqs": false,
+  "url": "https://api.pushover.net/1/messages.json",
+  "tls": "",
+  "persist": false,
+  "proxy": "",
+  "authType": "",
+  "x": 820,
+  "y": 100,
+  "wires": [
+    ["9d25b24.231d85"]
+  ]
+}, {
+  "id": "9d25b24.231d85",
+  "type": "debug",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "active": true,
+  "tosidebar": true,
+  "console": false,
+  "tostatus": false,
+  "complete": "false",
+  "x": 810,
+  "y": 200,
+  "wires": []
+}, {
+  "id": "e3b55e44.ae488",
+  "type": "trigger",
+  "z": "e28d3a41.600118",
+  "op1": "{\"token\":\"<YOUR_PUSHOVER_TOKEN>\",\"user\":\"<YOUR_PUSHOVER_USER>\",\"message\":\"Ding Dong!\"}",
+  "op2": "0",
+  "op1type": "json",
+  "op2type": "str",
+  "duration": "0",
+  "extend": false,
+  "units": "ms",
+  "reset": "0",
+  "bytopic": "all",
+  "name": "Http Request - My iPhone",
+  "x": 550,
+  "y": 100,
+  "wires": [
+    ["2196cf6c.1f616", "9d25b24.231d85"]
+  ]
+}, {
+  "id": "90e281f7.da0bb",
+  "type": "cast-to-client",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "url": "",
+  "contentType": "",
+  "message": "",
+  "language": "en",
+  "ip": "",
+  "port": "",
+  "volume": "",
+  "x": 730,
+  "y": 320,
+  "wires": [
+    ["a7aefb5a.e7e8a8"]
+  ]
+}, {
+  "id": "6b46dc17.164764",
+  "type": "inject",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "topic": "",
+  "payload": "",
+  "payloadType": "date",
+  "repeat": "",
+  "crontab": "",
+  "once": false,
+  "onceDelay": 0.1,
+  "x": 220,
+  "y": 320,
+  "wires": [
+    ["44a0f955.498728"]
+  ]
+}, {
+  "id": "44a0f955.498728",
+  "type": "change",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "rules": [{
+    "t": "set",
+    "p": "ip",
+    "pt": "msg",
+    "to": "<YOUR_GOOGLE_HOME_IP>",
+    "tot": "str"
+  }, {
+    "t": "set",
+    "p": "message",
+    "pt": "msg",
+    "to": "Ding Dong! There is someone at your Front door",
+    "tot": "str"
+  }, {
+    "t": "set",
+    "p": "language",
+    "pt": "msg",
+    "to": "En-gb",
+    "tot": "str"
+  }],
+  "action": "",
+  "property": "",
+  "from": "",
+  "to": "",
+  "reg": false,
+  "x": 560,
+  "y": 320,
+  "wires": [
+    ["90e281f7.da0bb"]
+  ]
+}, {
+  "id": "a7aefb5a.e7e8a8",
+  "type": "debug",
+  "z": "e28d3a41.600118",
+  "name": "",
+  "active": true,
+  "tosidebar": true,
+  "console": false,
+  "tostatus": false,
+  "complete": "payload",
+  "targetType": "msg",
+  "x": 890,
+  "y": 320,
+  "wires": []
+}, {
+  "id": "7bf86d2e.c88e74",
+  "type": "comment",
+  "z": "e28d3a41.600118",
+  "name": "Text to speech GoogleHome",
+  "info": "",
+  "x": 160,
+  "y": 280,
+  "wires": []
+}, {
+  "id": "44fa7f28.5e3ed",
+  "type": "comment",
+  "z": "e28d3a41.600118",
+  "name": "RPi Pin Triggger",
+  "info": "",
+  "x": 190,
+  "y": 380,
+  "wires": []
+}]
+```
+
+***
+
+## Security Camera :video_camera:
+
+
+***
