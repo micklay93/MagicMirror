@@ -1,0 +1,32 @@
+# On MagicMirror Pi
+# Open a terminal
+# mkdir GoogleHomeDoorbell in a dir of your choice
+# cd to GoogleHomeDoorbell
+# Run the below
+
+gpio -v
+gpio readall
+# This should export a list of GPIO pins on your Pi
+
+# On a Raspberry Pi 4 I had to issue these commands to make it work correctly:
+cd /tmp
+wget https://project-downloads.drogon.net/wiringpi-latest.deb sudo dpkg -i wiringpi-latest.deb
+sudo dpkg -i wiringpi-latest.deb
+
+# Then do this again:
+gpio -v
+gpio readall
+
+# Install 433Utils:
+git clone --recursive git://github.com/ninjablocks/433Utils.git cd 433Utils/RPi_utils
+cd 433Utils/RPi_utils
+mv RFSniffer.cpp oldRFSniffer.cpp
+wget http://www.securipi.co.uk/433.zip tar xvf 433.zip
+tar xvf 433.zip
+chmod a+x *.sh
+make
+ls -al
+
+sudo ./test.sh
+
+# Now press your doorbell and this should capture its RF frequency ID Number if the doorbell is compatable. (USE THE ONE I SUGGEST IN REPO)
